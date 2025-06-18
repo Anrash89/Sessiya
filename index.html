@@ -81,8 +81,10 @@
     .card-front[data-group="sczenarii"] { background: var(--gradient-sczenarii); }
     .card-front[data-group="mayaki"] { background: var(--gradient-mayaki); }
     .front-theme { font-size: 1.2rem; font-weight: 600; margin-bottom: 4px; }
+    .front-number { position: absolute;  bottom: 12px; left: 12px; font-size: 2.5rem; font-weight: bold;color: rgba(255,255,255,0.85); z-index: 2; }
     .front-category { font-size: 0.9rem; opacity: 0.85; margin-bottom: auto; }
-    .front-tag { font-size: 0.75rem; text-align: right; opacity: 0.8; margin-top: 8px; }
+    .front-tag { position: absolute; bottom: 12px;right: 12px; font-size: 0.75rem;opacity: 0.8;z-index: 2; margin: 0;text-align: right; }
+    .front-watermark { position: absolute; top: 50%; left: 50%;transform: translate(-50%, -50%) rotate(-90deg); font-size: 5rem; font-weight: bold;color: rgba(255,255,255,0.25); pointer-events: none; z-index: 1; white-space: nowrap;}
     .card-back { transform: rotateY(180deg); padding: 16px; color: #333; display: flex; flex-direction: column; }
     .back-question { font-size: 0.95rem; font-weight: 500; margin-bottom: 12px; overflow-y: auto; }
     .back-answer { font-size: 0.85rem; line-height: 1.4; white-space: pre-wrap; overflow-y: auto; flex: 1 1 auto; filter: blur(4px); transition: filter 0.3s ease; cursor: pointer; }
@@ -1053,37 +1055,45 @@
     const container = document.getElementById('cards');
 
     function renderCards(filterGroup) {
-      container.innerHTML = '';
-      cards.filter(c => c.group === filterGroup).forEach(({group, theme, category, question, answer}) => {
-        const card = document.createElement('div'); card.className = 'card';
-        const inner = document.createElement('div'); inner.className = 'card-inner';
+  container.innerHTML = '';
+  cards.forEach((c, idx) => {
+    if (c.group !== filterGroup) return;   // отфильтровываем нужную вкладку
 
-        const front = document.createElement('div');
-        front.className = 'card-face card-front';
-        front.dataset.group = group;
-        front.innerHTML = `
-          <div class="front-theme">${theme}</div>
-          ${category ? `<div class="front-category">${category}</div>` : ''}
-          <div class="front-tag">ПАРТНЁРСКАЯ СЕССИЯ</div>
-        `;
+    const card = document.createElement('div');
+    card.className = 'card';
+    const inner = document.createElement('div');
+    inner.className = 'card-inner';
 
-        const back = document.createElement('div'); back.className = 'card-face card-back';
-        back.innerHTML = `
-          <div class="back-question">${question}</div>
-          <div class="back-answer">${answer}</div>
-        `;
+    // собираем front
+    const front = document.createElement('div');
+    front.className = 'card-face card-front';
+    front.dataset.group = c.group;
+    front.innerHTML = `
+      <div class="front-number">${idx + 1}</div>
+      <div class="front-watermark">TAIYAN</div>
+      <div class="front-theme">${c.theme}</div>
+      ${c.category ? `<div class="front-category">${c.category}</div>` : ''}
+      <div class="front-tag">ПАРТНЁРСКАЯ СЕССИЯ</div>
+    `;
 
-        inner.append(front, back);
-        card.append(inner);
-        container.appendChild(card);
+        const back = document.createElement('div');
+    back.className = 'card-face card-back';
+    back.innerHTML = `
+      <div class="back-question">${c.question}</div>
+      <div class="back-answer">${c.answer}</div>
+    `;
 
-        card.addEventListener('click', () => card.classList.toggle('is-flipped'));
-        back.querySelector('.back-answer').addEventListener('click', e => {
-          e.stopPropagation();
-          e.currentTarget.classList.toggle('revealed');
-        });
-      });
-    }
+    inner.append(front, back);
+    card.append(inner);
+    container.appendChild(card);
+
+    card.addEventListener('click', () => card.classList.toggle('is-flipped'));
+    back.querySelector('.back-answer').addEventListener('click', e => {
+      e.stopPropagation();
+      e.currentTarget.classList.toggle('revealed');
+    });
+  });
+}
 
     document.querySelectorAll('.tabs button').forEach(tab => {
       tab.addEventListener('click', () => {
